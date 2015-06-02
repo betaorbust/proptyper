@@ -1,0 +1,15 @@
+{
+  "node":           true,
+  "strict":         true,
+  "browser":        false,
+  "trailing":       false,
+  "unused":         true,
+  "undef":          true,
+  "esnext":         true,
+  "smarttabs":      false,
+  "globalstrict":   true,
+  "globals": {
+    "module": true,
+    "require": true
+  }
+}

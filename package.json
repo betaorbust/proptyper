@@ -1,0 +1,17 @@
+{
+  "name": "proptyper",
+  "version": "1.0.0",
+  "description": "List the used props for a file.",
+  "scripts": {
+    "test": "npm run test"
+  },
+  "preferGlobal": true,
+  "author": "Jacques Favreau (http://betaorbust.com/)",
+  "bin": {
+    "propup": "index.js"
+  },
+  "dependencies": {
+    "copy-paste": "^1.0.2",
+    "lodash": "^3.5.0"
+  }
+}
