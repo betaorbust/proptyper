@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
 var _= require('lodash');
-var clipboard = require('copy-paste');
+var exec = require('child_process').exec;
 var fs = require('fs');
 
 /**
@@ -29,20 +29,20 @@ var minorIndent = '    ';
 var mainIndent = minorIndent + minorIndent;
 
 // Find the search pattern in the provided file and return an array of uses.
-var exec = require('child_process').exec;
-var searchForDefined = exec(propTypeDefinedCommand, function(err, stdout, stderr){
+console.log('Attempting to put proptypes into ' + searchLocation);
+exec(propTypeDefinedCommand, function(err, stdout, stderr){
 	if(stdout.length > 0){
-		console.warn('Proptypes already defined in ' + searchLocation, +'; skipping.');
+		console.warn('Proptypes already defined in ' + searchLocation, '; skipping.');
 		process.exit(1);
 	}
 });
 
-var child = exec(propTypeFindCommand, function(err, stdout, stderr) {
+exec(propTypeFindCommand, function(err, stdout, stderr) {
 	var uses = stdout.split('\n').sort();
 	processLines(uses, PROP_DEFINITIONS);
 });
 
-// Process the found lines, build up an output object, and copy it to the clip board.
+// Process the found lines, build up an output object, write it to the file.
 function processLines(uses, propDefinitions){
 	uses = _.map(uses, function(use){
 		return use.slice(11);
@@ -54,14 +54,16 @@ function processLines(uses, propDefinitions){
 	});
 	output.push(mainIndent + '},\n' + mainIndent + '//</proptypes>');
 	console.log(output.join('\n')); // Print it in the console
-	clipboard.copy(output.join('\n')); // Copy it to your clipboard
-
 	// Read the file
 	fs.readFile(searchLocation, function(err, data) {
 		if(err) throw err;
 		var fileArray = data.toString().split('\n');
 
 		var insertLine = _.findIndex(fileArray, function(line){return COMPONENT_HEAD_TEST.test(line);});
+		if(!_.isNumber(insertLine) || insertLine < 0){
+			console.warn('Couldn\'t find good place to inject proptypes! Skipping file.');
+			process.exit(1);
+		}
 
 		console.log('insert line is:', insertLine);
 
