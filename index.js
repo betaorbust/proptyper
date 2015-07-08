@@ -13,7 +13,8 @@ var PROP_DEFINITIONS = {
 	func: [/[hH]andle/, /^[Oo]n/],
 	number: [/[Tt]otal/,/[Ii]ndex/, /[a-z]Num/, /[a-z]Num/, /Max$|Min$|^min|^max/, /columnsInRow/, /[Dd]elay$/, /Count$/, /^num[A-Z]|Num$/, /Ms$/, /^id$|Id$/],
 	string: [/[nN]ame/, /[Ll]abel/, /[Tt]ype/, /[Kk]ind/, /^src|Src$/, /[Tt]itle/, /Text$/, /^url|Url$/, /Prefix$/, /^query$/],
-	object: [/[Oo]ptions/, /[Cc]onfig/, /^model$/, /[Cc]ontext/, /Ref$/]
+	object: [/[Oo]ptions/, /[Cc]onfig/, /^model$/, /[Cc]ontext/, /Ref$/],
+	node: [/^children$/]
 };
 
 var COMPONENT_HEAD_TEST = /React.createClass/;
