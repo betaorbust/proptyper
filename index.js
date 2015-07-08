@@ -1,6 +1,6 @@
 #! /usr/bin/env node
-
-var _= require('lodash');
+'use strict';
+var _ = require('lodash');
 var exec = require('child_process').exec;
 var fs = require('fs');
 
@@ -25,9 +25,7 @@ var propTypesearchPattern = '\\(this\\|self\\|scope\\)\\.props\\.[A-Za-z0-9\\-]*
 var searchLocation = userArgs[0] ? userArgs[0] : '*';
 var propTypeFindCommand = 'grep -oh "' + propTypesearchPattern + '" '+searchLocation;
 var propTypeDefinedCommand = 'grep -oh "propTypes:" ' +searchLocation;
-var output = [];
 var minorIndent = '    ';
-var mainIndent = minorIndent + minorIndent;
 
 // Find the search pattern in the provided file and return an array of uses.
 console.log('Attempting to put proptypes into ' + searchLocation);
@@ -43,21 +41,46 @@ exec(propTypeFindCommand, function(err, stdout, stderr) {
 	processLines(uses, PROP_DEFINITIONS);
 });
 
-// Process the found lines, build up an output object, write it to the file.
-function processLines(uses, propDefinitions){
+/**
+ * Pad a string to a fixed length.
+ * @param text        The text you want to pad.
+ * @param finalLength The final lenght of the string you want
+ * @returns {String}  The padded string.
+ */
+function padWhitespace(text, finalLength){
+	if(text.length >= finalLength){
+		return text;
+	}else{
+		return text + new Array(finalLength - text.length + 1).join(' ');
+	}
+}
+
+function buildBlock(uses, propDefinitions, initialIndent){
+	var indent = initialIndent + minorIndent;
+	var output = [];
 	uses = _.map(uses, function(use){
 		return use.slice(11);
 	});
-	uses = _.without(_.uniq(uses, true), '', 'children', 'hasOwnProperty'); // get rid of built-in props
-	output.push(mainIndent+'//<proptypes>\n'+mainIndent+'propTypes: {');
+	uses = _.without(_.uniq(uses, true), '', 'hasOwnProperty'); // get rid of built-in props
+	output.push(indent+'//<proptypes>\n'+indent+'propTypes: {');
+	var maxPropNameLength = _.max(uses, function(use){
+		return use.length;
+	}).length;
 	_.forEach(uses, function(use, idx, collection){
-		output.push(mainIndent + minorIndent + use + ': ' + parseType(use, propDefinitions) + (idx === (collection.length-1) ? '' : ','));
+
+		output.push(indent + minorIndent + padWhitespace(use + ': ', maxPropNameLength + 2) + parseType(use, propDefinitions) + (idx === (collection.length-1) ? '' : ','));
 	});
-	output.push(mainIndent + '},\n' + mainIndent + '//</proptypes>');
+	output.push(indent + '},\n' + indent + '//</proptypes>');
 	console.log(output.join('\n')); // Print it in the console
+
+	return output;
+}
+
+// Process the found lines, build up an output object, write it to the file.
+function processLines(uses, propDefinitions){
 	// Read the file
 	fs.readFile(searchLocation, function(err, data) {
-		if(err) throw err;
+		if(err) {throw err;}
 		var fileArray = data.toString().split('\n');
 
 		var insertLine = _.findIndex(fileArray, function(line){return COMPONENT_HEAD_TEST.test(line);});
@@ -67,7 +90,8 @@ function processLines(uses, propDefinitions){
 		}
 
 		console.log('insert line is:', insertLine);
-
+		var indent = (/^[ \t]+/.exec(fileArray[insertLine]) || [''])[0];
+		var output = buildBlock(uses, propDefinitions, indent);
 		// Insert the content at specified line
 		fileArray.splice.apply(fileArray, [insertLine + 1, 0].concat(output));
 
@@ -103,4 +127,3 @@ function parseType(propName, propDefinitions){
 	// If it didn't match any check, just return the base.
 	return found || BASE;
 }
-
