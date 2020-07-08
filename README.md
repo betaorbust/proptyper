@@ -1,5 +1,12 @@
+NOT MAINTAINED:
+==============
+This is an old project without support or maintenance.
+======================================================
+
+
+
 Proptyper
-=========
+----------
 
 ![I'm helping!](http://i.imgur.com/2jDRS0D.gif?1)
 
